@@ -6,7 +6,7 @@ var appAssembly = Assembly.GetExecutingAssembly();
 var builder = WebApplication.CreateBuilder(args);
 
 // Common
-builder.Services.AddEfCore();
+builder.Services.AddEfCore(builder.Configuration);
 
 // Host
 builder.Services.AddHandlers();
@@ -35,5 +35,7 @@ if (app.Environment.IsDevelopment())
 app.UseProductionExceptionHandler();
 
 app.RegisterEndpoints(appAssembly);
+
+app.EnsureDatabaseCreated();
 
 app.Run();

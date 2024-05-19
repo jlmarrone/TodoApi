@@ -1,4 +1,5 @@
-﻿using TodoApi.Features.Todos.Domain;
+﻿using TodoApi.Common.Persistence.Common.QueryObjects;
+using TodoApi.Features.Todos.Domain;
 
 namespace TodoApi.Features.Todos.Queries;
 
@@ -15,13 +16,17 @@ public sealed partial class GetAllTodos : IEndpoint
             .ProducesProblem(StatusCodes.Status500InternalServerError)
             .WithTags(nameof(Todo));
     }
-    
-    public sealed record Query(bool? IsCompleted = null);
 
-    private static async ValueTask<IReadOnlyList<Presentation.Dto.Todo>> HandleAsync(Query request, AppDbContext dbContext, CancellationToken cancellationToken)
+    public sealed record Query(bool? IsCompleted, int Page = 1, int PageSize = 25);
+
+    private static async ValueTask<IReadOnlyList<Presentation.Dto.Todo>> HandleAsync(
+        Query request,
+        AppDbContext dbContext,
+        CancellationToken cancellationToken)
     {
         var todos = await dbContext.Todos
             .Where(x => request.IsCompleted == null || x.IsCompleted == request.IsCompleted)
+            .Page(request.Page, request.PageSize)
             .Select(x => new Presentation.Dto.Todo
             {
                 Id = x.Id,
